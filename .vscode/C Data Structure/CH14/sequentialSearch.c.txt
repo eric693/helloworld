@@ -1,0 +1,33 @@
+/* file name: sequentialSearch.c */
+/* 循序搜尋 */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int data[10] = {75, 23, 98, 44, 57, 12, 29, 64, 38, 82};
+    int i, input;
+    printf("\n<< Squential search >>\n");
+    printf("\n資料如下: ");
+    for (i = 0; i < 10; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+    
+    printf("\n請輸入要找尋的資料: ");
+    scanf("%d", &input);
+    printf("\nSearching.....\n");
+    /* 依序搜尋資料 */
+    for (i = 0; i < 10; i++) {
+        printf("\n找尋第 %2d 次，資料是 %d", i+1, data[i]);
+        if(input == data[i])
+            break;
+    }
+    if (i == 10)
+        printf("\n\n抱歉, %d 找不到!", input);
+    else
+        printf("\n\n找到了, %d 在陣列的第 %d 個!", input, i+1);
+    printf("\n");
+
+    return 0;
+}

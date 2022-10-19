@@ -1,0 +1,46 @@
+/* file name: binarySearch.c */
+/* 二元搜尋 */
+
+#include <stdio.h>
+#include <stdlib.h>
+int main()
+{
+    int data[10] = {12, 23, 29, 38, 44, 57, 64, 75, 82, 98};
+    int i, left = 0, right = 9, mid, cnt = 0, input, ok = 0;
+    printf("\n<< Binary search >>\n");
+    printf("\n已排序好的資料: ");
+    for(i = 0; i < 10; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+    
+    printf("\n請輸入欲找尋的資料: ");
+    scanf("%d", &input);
+    printf("\nSearching....\n");
+    mid = (left + right)/2;     /* 鍵值在第M筆 */
+    while (left <= right && ok == 0) {
+        printf("\n第%2d 次找的資料是: %d!", ++cnt, data[mid]);
+        /* 欲搜尋的資料小於鍵值，則資料在鍵值的前面 */
+        if(data[mid] > input) {
+            right = mid - 1;
+            printf("\n ---> 要找的資料小於 %d\n", data[mid]);
+        }
+        /* 否則資料在鍵值的後面 */
+        else {
+            if(data[mid] < input) {
+                left = mid + 1;
+                printf("\n ---> 要找的資料大於 %d\n", data[mid]);
+            }
+            else {
+                printf("\n\n找到了, %d 是在索引 %d 的位置!\n", input, mid);
+                ok = 1;
+            }
+        }
+        mid = (left + right)/2;
+    }
+    
+    if(ok == 0)
+        printf("\n\n抱歉, %d 找不到!", input);
+    printf("\n");
+
+    return 0;
+}

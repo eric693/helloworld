@@ -1,0 +1,60 @@
+/* file name: insertionSort.c */
+/* 插入排序 */
+
+#include <stdio.h>
+void insertion_sort(int[], int);
+void printDashLine(void);
+
+int main()
+{
+    int data[20];
+    int size = 0, i;
+    printf("\n請輸入資料(輸入 0 表示結束): ");
+        
+    /* 要求輸入數字直到輸入數字為 0 */
+    do {
+        scanf("%d", &data[size]);
+    }  while(data[size++] != 0);
+    
+    printf("未排序的資料 : ");
+    for (i = 0; i < size-1; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+    
+    printDashLine();
+    insertion_sort(data, --size);
+    printDashLine();
+    
+    printf("由小至大排序後的資料: ");
+    for (i = 0; i < size; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+
+    return 0;
+}
+void insertion_sort(int data[], int size)
+{
+    int base, compare, temp, i;
+    for (base = 0; base < size; base++) {
+        /* 將此資料與位於它前面的資料比對。找出插入位置 */
+        temp = data[base];
+        compare = base;
+        printf("加入 %d\n", temp);
+        while (compare > 0 && data[compare-1] > temp) {
+            data[compare] = data[compare-1];
+            compare--;
+        }
+        data[compare] = temp;
+        printf("#%d PASS : ", base+1);
+        for (i = 0; i <= base; i++)
+            printf("%5d ", data[i]);
+        printf("\n\n");
+    }
+}
+
+void printDashLine()
+{
+    for (int i = 0; i < 40; i++)
+        printf("-");
+    printf("\n");
+}

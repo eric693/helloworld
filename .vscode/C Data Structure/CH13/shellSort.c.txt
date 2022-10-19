@@ -1,0 +1,55 @@
+/* file name: shellSort.c*/
+/* 謝耳排序 */
+
+#include <stdio.h>
+#include <stdlib.h>
+void printDashLine(void);
+
+int main()
+{
+    int data[11] = {0, 75, 23, 98, 44, 57, 12, 29, 64, 38, 82};
+    int i, j, k, incr, temp;
+    printf("\n<< Shell sort >>\n");
+    printf("\n未排序前的資料: ");
+    for (i = 1; i <= 10; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+    
+    printDashLine();
+    incr = 10/2;
+    while (incr > 0) {
+        for (i = incr+1; i <= 10; i++) {
+            j = i - incr;
+            while (j > 0)
+                if (data[j] > data[j+incr]) {
+                    /* 大小順序不對則交換 */
+                    temp = data[j];
+                    data[j] = data[j+incr];
+                    data[j+incr] = temp;
+                    j = j - incr;
+                }
+                else
+                    j = 0;
+        }
+        printf("\nProcessing : ");
+        for(k = 1; k <= 10; k++)
+            printf("%d  ", data[k]);
+        incr = incr/2;
+    }
+    printf("\n");
+    printDashLine();
+    
+    printf("由小至大排序後的資料: ");
+    for (i = 1; i <= 10; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+
+    return 0;
+}
+
+void printDashLine()
+{
+    for(int i = 0; i < 58; i++)
+        printf("-");
+    printf("\n");
+}

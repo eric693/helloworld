@@ -1,0 +1,184 @@
+/* file name: dList.c */
+/* 雙向鍵結串列的加入與刪除 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void init_f(void);     /* 初始化串列，建立一空節點為 head */
+void insert_f(void);   /* 插入函數 */
+void sort_f(void);     /* 排序函數 */
+void delete_f(void);   /* 刪除函數 */
+void display_f(void);  /* 輸出函數 */
+void modify_f(void);   /* 修改函數 */
+void flushBuffer(void);
+
+struct Student {
+    char name[20];         /* 姓名 */
+    int score;             /* 分數 */
+    struct Student *llink;  /* 節點左鏈結 */
+    struct Student *rlink;  /* 節點右鏈結 */
+};
+struct Student *ptr, *head, *tail, *current, *prev, *temp;
+
+int main(void)
+{
+    char option1;
+
+    init_f();
+    while(1) {
+        printf("\n雙向鏈結串列的運作選單\n");
+        printf("************\n");
+        printf("   1.insert\n");
+        printf("   2.delete\n");
+        printf("   3.display\n");
+        printf("   4.modify\n");
+        printf("   5.quit\n");
+        printf("*************\n");
+        printf("請輸入選項(1-5): ");
+        option1 = getchar();
+        flushBuffer();
+        switch (option1) {
+            case '1':
+                insert_f();
+                break;
+            case '2':
+                delete_f();
+                break;
+            case '3':
+                display_f();
+                break;
+            case '4':
+                modify_f();
+                break;
+            case '5':
+                printf("\n程式結束\n");
+                exit(0);
+        }
+    }
+    return 0;
+}
+
+void init_f(void)  /* 設一個 head，將左右鏈結皆指向本身 */
+{
+    ptr = (struct Student *) malloc(sizeof(struct Student));
+    strcpy(ptr->name, "0");
+    ptr->llink = ptr;
+    ptr->rlink = ptr;
+    head = ptr;
+    tail = ptr;
+}
+
+void insert_f(void)
+{
+    ptr = (struct Student *) malloc(sizeof(struct Student));
+    printf("\n 姓名: ");
+    scanf("%s", ptr->name);
+    printf(" 成績: ");
+    scanf("%d", &ptr->score);
+    flushBuffer();
+    
+    /* 以分數高低排列 */
+    prev = head;
+    current = head->rlink;
+    while (current != head && current->score > ptr->score) {
+        prev = current;
+        current = current->rlink;
+    }
+    ptr->rlink = current;
+    ptr->llink = prev;
+    prev->rlink = ptr;
+    current->llink = ptr;
+}
+
+void delete_f(void)
+{
+    char del_name[20];
+    printf("\n 欲刪除姓名: ");
+    scanf("%s", del_name);
+    flushBuffer();
+    prev = head;
+    current = head->rlink;
+    while (current != head && strcmp(del_name, current->name) != 0) {
+        prev = current;
+        current = current->rlink;
+    }
+    if (current != head) {
+        prev->rlink = current->rlink;
+        current->rlink->llink = prev;
+        printf(" %s 已被刪除\n", del_name);
+        free(current);
+    }
+    else  /* 找不到資料則顯示錯誤 */
+        printf(" %s 不在串列中\n", del_name);
+}
+
+void modify_f(void)
+{
+    char n_temp[20];
+    printf("\n 欲修改的姓名: ");
+    scanf("%s", n_temp);
+    prev = head;
+    current = head->rlink;
+    while (current != head && strcmp(n_temp, current->name)) {
+        prev = current;
+        current = current->rlink;
+    }
+    if (current == head) {
+        printf(" %s 沒有在串列中\n", n_temp);
+    }
+    else {
+        printf(" ******************\n");
+        printf("  姓名 : %s\n", current->name);
+        printf("  分數: %d\n", current->score);
+        printf(" ******************\n");
+        printf(" 請輸入新的分數: ");
+        scanf("%d", &current->score);
+        flushBuffer();
+        printf(" %s 已被修改\n", n_temp);
+        //將修改的節點加入於適當的位置
+        //先將 current 的節點指定給 temp，並重新調整左、右節點
+        temp = current;
+        prev->rlink = current->rlink;
+        current->rlink->llink = prev;
+        //再將 temp 節點加入於串列中
+        /* 以分數高低排列 */
+        prev = head;
+        current = head->rlink;
+        while (current != head && current->score > temp->score) {
+            prev = current;
+            current = current->rlink;
+        }
+        temp->rlink = current;
+        temp->llink = prev;
+        prev->rlink = temp;
+        current->llink = temp;
+    }
+}
+
+void display_f(void)
+{
+    int count = 0;
+    if (head->rlink == head) {
+        printf("\n 串列無資料\n");
+    }
+    else {
+        printf("\n");
+        printf("  NAME           SCORE\n");
+        printf(" ----------------------\n");
+        current = head->rlink;
+        while (current != head) {
+            printf("  %-15s %3d\n", current->name, current->score);
+            count++;
+            current = current->rlink;
+        }
+        printf(" ----------------------\n");
+        printf(" 總共有 %d 筆資料\n", count);
+    }
+}
+
+void flushBuffer(void)
+{
+    while(getchar() != '\n')
+        continue;
+}

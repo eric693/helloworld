@@ -1,0 +1,81 @@
+/* file name: binaryTreeSort.c */
+/* 二元樹排序 */
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct data {
+    int num;
+    struct data *lbaby, *rbaby;
+} *root, *tree, *leaves;
+
+void find(int, struct data *);
+void output(struct data *);
+void printDashLine(void);
+
+int main()
+{
+    int data[10] = {75, 23, 98, 44, 57, 12, 29, 64, 38, 82};
+    int i;
+    printf("\n<< Binary tree sort >>\n");
+    printf("\n未排序的資料: ");
+    for (i = 0; i < 10; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+    
+    printDashLine();
+    root = (struct data *) malloc(sizeof(struct data));
+    root->num = data[0];     /* 建樹根 */
+    root->lbaby = NULL;
+    root->rbaby = NULL;
+    printf("\n#%2d Step : ", 1);
+    output(root);
+    leaves = (struct data *) malloc(sizeof(struct data));
+    for (i = 1; i < 10; i++) { /* 建樹枝 */
+        leaves->num = data[i];
+        leaves->lbaby = NULL;
+        leaves->rbaby = NULL;
+        find(leaves->num, root);
+        if (leaves->num > tree->num)  /* 若比父節點大，則放右子樹 */
+            tree->rbaby = leaves;
+        else                        /* 否則放在左子樹 */
+            tree->lbaby = leaves;
+        printf("\n#%3d Step : ", i+1);
+        output(root);
+        leaves = (struct data *) malloc(sizeof(struct data));
+    }
+    puts("");
+    printDashLine();
+    printf("\n由小至大排序後的資料 : ");
+    output(root);
+    printf("\n");
+
+    return 0;
+}
+
+/* 尋找新節點存放的位置 */
+void find(int input, struct data *papa)
+{
+    if ((input > papa->num) && (papa->rbaby != NULL))
+        find(input, papa->rbaby);
+    else if ((input < papa->num) && (papa->lbaby != NULL))
+        find(input, papa->lbaby);
+    else
+        tree = papa;
+}
+
+/* 用中序追蹤將資料印出 */
+void output(struct data *node)
+{
+    if (node != NULL) {
+        output(node->lbaby);
+        printf("%d  ", node->num);
+        output(node->rbaby);
+    }
+}
+
+void printDashLine()
+{
+    for(int i = 0; i < 58; i++)
+        printf("-");
+}

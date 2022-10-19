@@ -1,0 +1,73 @@
+/* file name: quickSort.c */
+/* 快速排序 */
+
+#include <stdio.h>
+void quickSort(int[], int, int, int);
+void printDashLine(void);
+
+int main()
+{
+    int data[20];
+    int size = 0, i;
+    printf("\n請輸入資料(輸入 0 表示結束): ");
+    /* 要求輸入數字直到輸入數字為 0 */
+    do {
+        scanf("%d", &data[size]);
+    } while(data[size++] != 0);
+    
+    printDashLine();
+    quickSort(data, 0, size-2, size);
+    printDashLine();
+    
+    printf("由小至大排序後的資料: ");
+    for (i = 0; i < size-1; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+
+    return 0;
+}
+
+void quickSort(int data[], int left, int right, int size)
+{
+    /* left 與 right 分別表欲排序資料兩端 */
+    int lbase, rbase, temp, i;
+    if (left < right) {
+        lbase = left+1;
+        while(data[lbase] < data[left])
+            lbase++;
+        rbase = right;
+        while(data[rbase] > data[left])
+            rbase--;
+        
+        /* 若lbase小於rbase，則兩資料對調 */
+        while (lbase < rbase) {
+            temp = data[lbase];
+            data[lbase] = data[rbase];
+            data[rbase] = temp;
+            lbase++;
+            while(data[lbase] < data[left])
+                lbase++;
+            rbase--;
+            while (data[rbase] > data[left])
+                rbase--;
+        }
+        
+        /* 此時lbase大於rbase，則rbase的資料與第一筆對調 */
+        temp = data[left];
+        data[left] = data[rbase];
+        data[rbase] = temp;
+        printf("Processing: ");
+        for (i = 0; i < size-1; i++)
+            printf("%3d  ", data[i]);
+        printf("\n");
+        quickSort(data, left, rbase-1, size);
+        quickSort(data, rbase+1, right, size);
+    }
+}
+
+void printDashLine()
+{
+    for(int i = 0; i < 62; i++)
+        printf("-");
+    printf("\n");
+}

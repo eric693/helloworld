@@ -1,0 +1,64 @@
+/* file name: bubbleSort.c */
+/* 氣泡排序 */
+
+#include <stdio.h>
+void bubbleSort(int[], int);
+
+int main(void)
+{
+    int data[20];
+    int size = 0, i;
+    printf("\n請輸入資料(輸入 0 表示結束): ");
+    
+    /* 要求輸入數字直到輸入數字為 0 */
+    do {
+        scanf("%d", &data[size]);
+    }  while(data[size++] != 0);
+
+    printf("未排序的資料 : ");
+    for (i = 0; i < size-1; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+
+    for (i = 0; i < 50; i++)
+        printf("-");
+    printf("\n");
+    bubbleSort(data, --size);  /* --size用於將資料為零者排除 */
+    for (i = 0; i < 50; i++)
+        printf("-");
+    printf("\n由小至大排序的資料 : ");
+    for (i = 0; i < size; i++)
+        printf("%d  ", data[i]);
+    printf("\n");
+
+    return 0;
+}
+
+void bubbleSort(int data[], int size)
+{
+    int i, j, k, temp, flag;
+    /* 讓資料兩兩比較，將小的置於前 */
+    for (i=0; i<size-1; i++) {
+        flag=0;
+        printf("#%d pass: \n", i+1);
+        for (j=0; j<size-i-1; j++) {
+            if (data[j] > data[j+1]) {
+                flag=1;
+                temp = data[j];
+                data[j] = data[j+1];
+                data[j+1] = temp;
+            }
+            //印出每次的比較
+            printf("  #%d compare: ", j+1);
+            for (k = 0; k < size-i; k++)
+                printf("  %d ", data[k]);
+            printf("\n");
+        }
+        /* 若在某一pass中沒有交換的話，則結束 */
+        if (flag != 1)
+            break;
+
+        printf("\n");
+
+    }
+}

@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../Downloads/全華數位信號處理Python程式實作/Ch11"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"__locale": "c",
+			"algorithm": "c",
+			"stdio.h": "c"
+		}
+	}
+}

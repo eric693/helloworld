@@ -1,0 +1,216 @@
+/* file name: hashingTableUsingList.c */
+/* 雜湊法 : 使用鏈結串列處理碰撞 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#define MAX_NUM 100  /* 最大資料筆數 */
+#define PRIME 97     /* MAX_NUM之質數 */
+
+/* 定義資料結構 */
+typedef struct Person {
+    long id;
+    char name[21];
+    struct Person *link;
+} Student;
+
+/* 建立雜湊表串列 */
+Student *Hashtab[MAX_NUM], *current;
+
+/*函數原型宣告*/
+long hashfun(long);
+void insert(void);
+void del(void);
+Student *search(Student *,Student *);
+void query(void);
+void show(void);
+void flushBuffer(void);
+
+int main()
+{
+    char *menu_prompt =
+        "\n=== Hashing Table Program ==\n"
+        "  1. Insert\n"
+        "  2. Delete\n"
+        "  3. Show\n"
+        "  4. Search\n"
+        "  5. Quit\n"
+        "  請輸入選項: ";
+    char choice;
+    int i;
+
+    /* 起始雜湊串列，將各串列指向 NULL */
+    for (i = 0; i< MAX_NUM; i++)
+        Hashtab[i] = NULL;
+
+    do {
+        printf("%s", menu_prompt);
+        choice = toupper(getchar());
+        flushBuffer();
+        printf("\n");
+        switch (choice) {
+            case '1':
+                insert();
+                break;
+            case '2':
+                del();
+                break;
+            case '3':
+                show();
+                break;
+            case '4':
+                query();
+                break;
+            case '5':
+                puts("Bye Bye ^_^");
+                break;
+            default:
+                puts("錯誤選項!!");
+        }
+    } while (choice != '5');
+
+    return 0;
+}
+
+/* 雜湊函數: */
+/* 以除法運算傳求出記錄應儲存的位址 */
+long hashfun(long key)
+{
+    return (key % PRIME);
+}
+
+void insert()
+{
+    Student *newnode;
+    long index;
+
+    /*輸入記錄*/
+    newnode = (Student *)malloc(sizeof(Student));
+    newnode->link = NULL;
+    printf("Enter id: ");
+    scanf("%ld",&newnode->id);
+    printf("Enter Name: ");
+    scanf("%s",newnode->name);
+    flushBuffer();
+    
+    /* 利用雜湊函數求得記錄位址 */
+    index = hashfun(newnode->id);
+    printf("index 為 %ld\n", index);
+    /* 判斷該串列是否為空，若為空則建立此鏈結串列 */
+    if (Hashtab[index] == NULL) {
+        Hashtab[index] = newnode;
+        printf("Node insert ok!\n");
+    }
+    else {
+        printf("有碰撞，加入串列中...\n");
+        /* 加入於串列中 */
+        current = Hashtab[index];
+        while (current->link != NULL) {
+            current = current->link;
+        }
+        current->link = newnode;
+    }
+}
+
+/* 刪除節點函數 */
+void del()
+{
+    Student *node ,*node_parent;
+    long index;
+    
+    node = (Student *)malloc(sizeof(Student));
+    printf("Enter ID: ");
+    scanf("%ld",&node->id);
+    flushBuffer();
+    /* 利用雜湊函數轉換記錄位址 */
+    index = hashfun(node->id);
+
+    /* 搜尋節點是否存在並傳回指向該節點指標 */
+    node = search(Hashtab[index], node);
+
+    if (node == NULL)
+        printf("此資料找不到...\n");
+    else {
+        /* 如節點為串列首，則將串列指向NULL
+          否則找到其父節點，並將父節點link向節點後端 */
+        printf("ID : %ld   Name : %s\n",node->id,node->name);
+    
+        if (node == Hashtab[index])
+            Hashtab[index] = NULL;
+        else {
+            node_parent = Hashtab[index];
+            while (node_parent->link->id != node->id)
+                node_parent = node_parent->link;
+            node_parent->link = node->link;
+        }
+        free(node);
+        printf("此筆資料已刪除....\n");
+    }
+}
+
+/* 搜尋節點函數
+   如找到節點則傳回指向該節點之指標
+   否則傳回NULL */
+Student *search(Student *linklist, Student *Node)
+{
+    Student *ptr = linklist;
+    if (ptr == NULL)
+        return NULL;
+    while (ptr->id != Node->id && ptr->link != NULL)
+        ptr = ptr->link;
+    if (ptr == NULL)
+        return NULL;
+    else
+        return ptr;
+}
+
+/*查詢節點函數*/
+void query()
+{
+    Student *query_node;
+    long index;
+
+    query_node = (Student *)malloc(sizeof(Student));
+    printf("Enter ID: ");
+    scanf("%ld", &query_node->id);
+    flushBuffer();
+    index = hashfun(query_node->id);
+    /* 搜尋節點 */
+    query_node = search(Hashtab[index], query_node);
+ 
+    if (query_node == NULL)
+        printf("雜湊表沒有此筆資料...\n");
+    else {
+        printf("ID: %ld  Name: %s\n",    query_node->id,query_node->name);
+    }
+}
+
+/* 顯示節點函數，
+ 從雜湊串列一一尋找是否有節點存在 */
+void show()
+{
+    int i, flag=0;
+    Student *ptr;
+   
+    puts("ID                  NAME");
+    puts("------------------------");
+    for ( i = 0; i < MAX_NUM; i++ ) {
+        if (Hashtab[i] != NULL){
+            flag = 1;
+            ptr = Hashtab[i];
+            /* 串列後面若還有資料，則將整串列顯示出 */
+            while (ptr) {
+                printf("%-5ld    %15s\n",ptr->id,ptr->name);
+                ptr = ptr->link;
+            }
+        }
+     }
+     if (flag == 0)
+          printf("The Hashing table is empty !!!\n");
+}
+
+void flushBuffer()
+{
+    while (getchar() != '\n')
+        continue;
+}

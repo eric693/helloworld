@@ -1,0 +1,435 @@
+/* file name: avlTree.c */
+/* 利用 AVL-TREE 處理學生資料--取檔、存檔、插入、刪除、修改、輸出 */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct student {
+    char name[20];  /* 姓名 */
+    int score;  /* 分數 */
+    int bf;  /* 節點BF值 */
+    struct student *llink, *rlink;  /* 節點子鏈結 */
+};
+
+void insert_f(void);  /* 插入函數 */
+void delete_f(void);  /* 刪除函數 */
+void modify_f(void);  /* 修改函數 */
+void list_f(void);    /* 輸出函數 */
+void sort_f(char [], int);      /* 插入檔案後排序 */
+void inorder(struct student *);   /* 輸出使用中序追蹤 */
+void bf_count(struct student *);  /* 計算節點BF值 */
+int height_count(struct student *);   /* 計算節點高度 */
+void pivot_find(void);   /* 找出pivot所在節點 */
+int type_find(void);     /* 找出改善方法 */
+void type_ll(void);      /* 使用LL型態 */
+void type_rr(void);      /* 使用RR型態 */
+void type_lr(void);      /* 使用LR型態 */
+void type_rl(void);      /* 使用RL型態 */
+void flushBuffer(void);
+
+struct student *ptr, *root, *this_n, *prev, *pivot, *pivot_prev;
+int nodecount = 0; /* 用來計算node個數 */
+
+int main()
+{
+    char option;
+    while(1) {
+        printf("\n **********************\n");
+        printf("     <1> insert\n");
+        printf("     <2> delete\n");
+        printf("     <3> modify\n");
+        printf("     <4> list\n");
+        printf("     <5> exit\n");
+        printf(" **********************\n");
+        printf("  Enter your choice: ");
+        option = getchar();
+        flushBuffer();
+        switch(option) {
+            case '1':
+                insert_f();
+                break;
+            case '2':
+                delete_f();
+                break;
+            case '3':
+                modify_f();
+                break;
+            case '4':
+                list_f();
+                break;
+            case '5':
+                exit(0);
+        }
+    }
+    return 0;
+}
+
+void insert_f(void)
+{
+    char name_t[20];
+    int score_t;
+    printf("\n 請輸入姓名: ");
+    scanf("%s", name_t);
+    flushBuffer();
+    printf(" 請輸入分數: ");
+    scanf("%d", &score_t);
+    flushBuffer();
+    nodecount++;/* 將node加1 */
+    sort_f(name_t, score_t);   /* 呼叫 SORT_F 函數作排序及平衡 */
+}
+
+void sort_f(char name_t[], int score_t)
+{
+    int op;
+    this_n = root;
+    while((this_n != NULL) && (strcmp(name_t, this_n->name) != 0)) {
+        /* 插入資料小於目前位置，則往左移 */
+        if(strcmp(name_t, this_n->name) < 0) {
+            prev = this_n;
+            this_n = this_n->llink;
+        }
+        else {  /* 若大於目前位置，則往右移 */
+            prev = this_n;
+            this_n = this_n->rlink;
+        }
+    }
+    
+    /* 找到插入位置，無重覆資料存在 */
+    if(this_n == NULL || strcmp(name_t, this_n->name) != 0) {
+        ptr = (struct student *) malloc(sizeof(struct student));
+        strcpy(ptr->name, name_t);
+        ptr->score = score_t;
+        ptr->llink = NULL;
+        ptr->rlink = NULL;
+        if(root == NULL)
+            root = ptr;   /* ROOT不存在，則將ROOT指向插入資料 */
+        if(prev != NULL) {
+            if(strcmp(ptr->name, prev->name) < 0)
+                prev->llink = ptr;
+            else
+                prev->rlink = ptr;
+        }
+        
+        bf_count(root);
+        pivot_find();
+        
+        /* PIVOT存在，則須改善為AVL-TREE */
+        if(pivot != NULL) {
+            op = type_find();
+            switch(op) {
+                case 11:
+                    type_ll();
+                    break;
+                case 22:
+                    type_rr();
+                    break;
+                case 12:
+                    type_lr();
+                    break;
+                case 21:
+                    type_rl();
+                    break;
+            }
+        }
+        bf_count(root);  /* 重新計算每個節點的BF值 */
+    }
+    /* 欲插入資料KEY已存在，則顯示錯誤 */
+    else {
+        printf(" %s 不存在\n", name_t);
+    }
+}
+
+void delete_f(void)
+{
+    struct student *clear;
+    char name_t[20];
+    int op;
+    /* 若根不存在，則顯示錯誤 */
+    if(root == NULL)
+        printf(" AVL Tree 無資料\n");
+    else {
+        printf("\n  輸入欲刪除的姓名: ");
+        scanf("%s", name_t);
+        flushBuffer();
+        this_n = root;
+        while(this_n != NULL && strcmp(name_t, this_n->name) != 0) {
+            /* 若刪除資料鍵值小於目前所在資料，則往左子樹 */
+            if(strcmp(name_t, this_n->name) < 0) {
+                prev = this_n;
+                this_n = this_n->llink;
+            }
+            /* 否則則往右子樹 */
+            else {
+                prev = this_n;
+                this_n = this_n->rlink;
+            }
+        }
+        /* 找到欲刪除資料的狀況 */
+        if(this_n != NULL) {
+            /* 當欲刪除資料底下無左右子樹存在的狀況 */
+            if(this_n->llink == NULL && this_n->rlink == NULL) {
+                clear = this_n;
+                if(strcmp(name_t, root->name) == 0)  /* 欲刪除資料為根 */
+                    root = NULL;
+                else {
+                    /* 若不為根，則判斷其為左子樹或右子樹 */
+                    if(strcmp(name_t, prev->name) < 0)
+                        prev->llink = NULL;
+                    else
+                        prev->rlink = NULL;
+                }
+                free(clear);
+            }
+            else { /* 刪除的節點有左右子樹的存在 */
+                /* 以左子樹最大點代替刪除資料 */
+                if(this_n->llink != NULL) {
+                    clear = this_n->llink;
+                    while(clear->rlink != NULL) {
+                        prev = clear;
+                        clear = clear->rlink;
+                    }
+                    strcpy(this_n->name, clear->name);
+                    this_n->score = clear->score;
+                    if(this_n->llink == clear)
+                        this_n->llink = clear->llink;
+                    else
+                        prev->rlink = clear->llink;
+                }
+                /* 以右子樹最小點代替刪除資料 */
+                else {
+                    clear = this_n->rlink;
+                    while(clear->llink != NULL) {
+                        prev = clear;
+                        clear = clear->llink;
+                    }
+                    strcpy(this_n->name, clear->name);
+                    this_n->score = clear->score;
+                    if(this_n->rlink == clear)
+                        this_n->rlink = clear->rlink;
+                    else
+                        prev->llink = clear->rlink;
+                }
+                free(clear);
+            }
+            bf_count(root);
+            if(root != NULL) {   /* 若根不存在，則無需作平衡改善 */
+                pivot_find();      /* 尋找PIVOT所在節點 */
+                while(pivot != NULL) {
+                    op = type_find();
+                    switch(op) {
+                        case 11:
+                            type_ll();
+                            break;
+                        case 22:
+                            type_rr();
+                            break;
+                        case 12:
+                            type_lr();
+                            break;
+                        case 21:
+                            type_rl();
+                            break;
+                    } /* end of switch */
+                    bf_count(root);
+                    pivot_find(); /* 重覆檢查 */
+                }
+            }
+            nodecount--; /* 將node減1 */
+            printf("  %s 已被刪除\n", name_t);
+        }
+        /* 找不到刪除資料，則顯示錯誤 */
+        else
+            printf("  %s 找不到\n", name_t);
+    }
+}
+
+void modify_f(void)
+{
+    char name_t[20];
+    printf("\n  請輸入欲更新的姓名: ");
+    scanf("%s", name_t);
+    flushBuffer();
+    this_n = root;
+    /* 尋找欲更改資料所在節點 */
+    while((this_n != NULL) && (strcmp(name_t, this_n->name) != 0)) {
+        if(strcmp(name_t, this_n->name) < 0)
+            this_n = this_n->llink;
+        else
+            this_n = this_n->rlink;
+    }
+    
+    /* 若找到欲更改資料，則列出原資料，並要求輸入新的資料 */
+    if(this_n != NULL) {
+        printf(" ****************************\n");
+        printf("  姓名: %s\n", this_n->name);
+        printf("  分數: %d\n", this_n->score);
+        printf(" ****************************\n\n");
+        printf(" 請輸入新的分數: ");
+        scanf("%d", &this_n->score);
+        flushBuffer();
+        printf(" 資料更新完成\n");
+    }
+    /* 沒有找到資料則顯示錯誤 */
+    else
+        printf("  %s 找不到\n", name_t);
+}
+
+void list_f(void)
+{
+    if(root == NULL)
+        printf("\n AVL Tree 無資料\n");
+    else {
+        printf("\n   Name          Score\n");
+        printf("  --------------------\n");
+        inorder(root);   /* 使用中序法輸出資料 */
+    }
+}
+
+/* 中序使用遞迴 */
+void inorder(struct student *trees)
+{
+    if(trees != NULL) {
+        inorder(trees->llink);
+        printf("   %-15s %3d\n", trees->name, trees->score);
+        inorder(trees->rlink);
+    }
+}
+
+void bf_count(struct student *trees)  /* 計算BF值，使用後序法逐一計算 */
+{
+    if(trees != NULL) {
+        bf_count(trees->llink);
+        bf_count(trees->rlink);
+        /* BF值計算方式為左子樹高減去右子樹高 */
+        trees->bf = height_count(trees->llink) - height_count(trees->rlink);
+    }
+}
+
+int height_count(struct student *trees)
+{
+    if(trees == NULL) return 0;
+    else
+        if(trees->llink == NULL && trees->rlink == NULL)
+            return 1;
+        else
+            return 1 + (height_count(trees->llink) >
+                        height_count(trees->rlink) ?
+                        height_count(trees->llink) :
+                        height_count(trees->rlink));
+}
+
+void pivot_find(void)
+{
+    int i;
+    this_n = root;
+    pivot = NULL;
+    for (i =0; i<=nodecount-1; i++) {
+        /* 當BF值的絕對值大於等於1，則將PIVOT指向此節點 */
+        if(this_n->bf < -1 || this_n->bf > 1) {
+            pivot = this_n;
+            if(pivot != root) pivot_prev = prev;
+            printf("pivot name: %s", this_n->name);
+            break;
+        }
+        if(this_n->bf > 0) { /* 左子樹的高度較高 */
+            prev = this_n;
+            this_n = this_n->llink;
+        }
+        else if (this_n->bf < 0 ) { /* 右子樹的高度較高 */
+            prev = this_n;
+            this_n = this_n->rlink;
+        }
+    }
+}
+
+
+int type_find(void)
+{
+    int i, op_r = 0;
+    this_n = pivot;
+    for(i = 0; i < 2; i++) {
+        if(this_n->bf > 0) { /* 左子樹的高度較高 */
+            this_n = this_n->llink;
+            if(op_r == 0) op_r+=10;
+            else op_r++;
+        }
+        else if (this_n->bf < 0 ) { /* 右子樹的高度較高 */
+            this_n = this_n->rlink;
+            if(op_r == 0) op_r+=20;
+            else op_r+=2;
+        }
+    }
+    /* 傳回值11、22、12、21分別代表LL、RR、LR、RL型態 */
+    return op_r;
+}
+
+void type_ll(void)  /* LL型態 */
+{
+    struct student *pivot_next, *temp;
+    pivot_next = pivot->llink;
+    temp = pivot_next->rlink;
+    pivot_next->rlink = pivot;
+    pivot->llink = temp;
+    if(pivot == root) root = pivot_next;
+    else
+        if(pivot_prev->llink == pivot)
+            pivot_prev->llink = pivot_next;
+        else
+            pivot_prev->rlink = pivot_next;
+}
+
+void type_rr(void)  /* RR型態 */
+{
+    struct student *pivot_next, *temp;
+    pivot_next = pivot->rlink;
+    temp = pivot_next->llink;
+    pivot_next->llink = pivot;
+    pivot->rlink = temp;
+    if(pivot == root) root = pivot_next;
+    else
+        if(pivot_prev->llink == pivot)
+            pivot_prev->llink = pivot_next;
+        else
+            pivot_prev->rlink = pivot_next;
+}
+
+void type_lr(void)  /* LR型態 */
+{
+    struct student *pivot_next, *temp;
+    pivot_next = pivot->llink;
+    temp = pivot_next->rlink;
+    pivot->llink = temp->rlink;
+    pivot_next->rlink = temp->llink;
+    temp->llink = pivot_next;
+    temp->rlink = pivot;
+    if(pivot == root) root = temp;
+    else
+        if(pivot_prev->llink == pivot)
+            pivot_prev->llink = temp;
+        else
+            pivot_prev->rlink = temp;
+}
+
+void type_rl(void)  /* RL型態 */
+{
+    struct student *pivot_next, *temp;
+    pivot_next = pivot->rlink;
+    temp = pivot_next->llink;
+    pivot->rlink = temp->llink;
+    pivot_next->llink = temp->rlink;
+    temp->rlink = pivot_next;
+    temp->llink = pivot;
+    if(pivot == root) root = temp;
+    else
+        if(pivot_prev->llink == pivot)
+            pivot_prev->llink = temp;
+        else
+            pivot_prev->rlink = temp;
+}
+
+void flushBuffer(void)
+{
+    while(getchar() != '\n')
+        continue;
+}

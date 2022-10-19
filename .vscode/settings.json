@@ -18,5 +18,30 @@
         "/usr/local/opt/opencv@3/include"
         // "/usr/local/Cellar/opencv/4.0.1/include/opencv4"
         // "/usr/local/include/opencv4"
-    ]
+    ],
+    "files.associations": {
+        "__locale": "c",
+        "algorithm": "c",
+        "stdio.h": "c",
+        "配置記憶體.C": "cpp",
+        "__bit_reference": "c",
+        "__node_handle": "c",
+        "atomic": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "cstddef": "c",
+        "__memory": "c",
+        "limits": "c",
+        "locale": "c",
+        "optional": "c",
+        "ratio": "c",
+        "system_error": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "vector": "c",
+        "__functional_base": "c",
+        "functional": "c",
+        "iterator": "c",
+        "memory": "c"
+    }
 }
