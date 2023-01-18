@@ -1,119 +1,3 @@
-/*
-#include <stdio.h>
-
-int main(void)
-{
-    int number1, number2;
-
-    printf("請輸入兩個數字，中間使用空白區隔）：");
-    scanf("%d %d", &number1, &number2);
-    printf("你輸入的數字：%d %d\n", number1, number2);
-
-    printf("請再輸入兩個數字，中間使用-號區隔）：");
-    scanf("%d-%d", &number1, &number2);
-    printf("你輸入的數字：%d-%d\n", number1, number2);
-
-    return 0;
-}
-
-
-
-#include <stdio.h>
-
-int main()
-{
-
-    char *str = "hello";
-    void *add = str;
-
-    printf("%s\t%p\n", str, add);
-
-    str = "world";
-    add = str;
-    printf("%s\t%p\n", str, add);
-
-    return 0;
-}
-*/
-/*
-#include <stdio.h>
-#include <stdlib.h>
-
-#define MAX 80
-
-void inToPostfix(char *, char *); // 中序轉後序
-int priority(char);               // 運算子優先權
-
-int main(void)
-{
-    char infix[MAX] = {'\0'};
-    char postfix[MAX] = {'\0'};
-
-    printf("中序運算式：");
-    scanf("%s", infix);
-    inToPostfix(infix, postfix);
-
-    int i;
-    for (i = 0; postfix[i] != '\0'; i++)
-    {
-        printf("%c", postfix[i]);
-    }
-
-    return 0;
-}
-
-void inToPostfix(char *infix, char *postfix)
-{
-    char stack[MAX] = {'\0'};
-    int i, j, top;
-    for (i = 0, j = 0, top = 0; infix[i] != '\0'; i++)
-        switch (infix[i])
-        {
-        case '(': // 運算子堆疊
-            stack[++top] = infix[i];
-            break;
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-            while (priority(stack[top]) >= priority(infix[i]))
-            {
-                postfix[j++] = stack[top--];
-            }
-            stack[++top] = infix[i]; // 存入堆疊
-            break;
-        case ')':
-            while (stack[top] != '(')
-            { // 遇 ) 輸出至 (
-                postfix[j++] = stack[top--];
-            }
-            top--; // 不輸出 (
-            break;
-        default: // 運算元直接輸出
-            postfix[j++] = infix[i];
-        }
-    while (top > 0)
-    {
-        postfix[j++] = stack[top--];
-    }
-}
-
-int priority(char op)
-{
-    switch (op)
-    {
-    case '+':
-    case '-':
-        return 1;
-    case '*':
-    case '/':
-        return 2;
-    default:
-        return 0;
-    }
-}
-*/
-
 // A program to check if a given binary tree is complete or
 // not
 #include <stdbool.h>
@@ -148,42 +32,53 @@ bool isCompleteBT(struct node *root)
     // Create an empty queue
     int rear, front;
     struct node **queue = createQueue(&front, &rear);
-    enQueue(queue, &rear, root);
 
     // Create a flag variable which will be set true
     // when a non full node is seen
     bool flag = false;
 
     // Do level order traversal using queue.
-
+    enQueue(queue, &rear, root);
     while (!isQueueEmpty(&front, &rear))
     {
         struct node *temp_node = deQueue(queue, &front);
 
-        if (!temp_node)
+        /* Check if left child is present*/
+        if (temp_node->left)
         {
-            // If we have seen a NULL node,
-            // we set the flag to true
-            flag == true;
-        }
-        else
-        {
-            // If that NULL node
-            // is not the last node
-            // then return false
+            // If we have seen a non full node, and we see a
+            // node with non-empty left child, then the
+            // given tree is not a complete Binary Tree
             if (flag == true)
-            {
                 return false;
-            }
-            // Push both nodes
-            // even if there are null
+
             enQueue(queue, &rear,
                     temp_node->left); // Enqueue Left Child
+        }
+        else // If this a non-full node, set the flag as
+            // true
+            flag = true;
+
+        /* Check if right child is present*/
+        if (temp_node->right)
+        {
+            // If we have seen a non full node, and we see a
+            // node with non-empty right child, then the
+            // given tree is not a complete Binary Tree
+            if (flag == true)
+                return false;
+
             enQueue(
                 queue, &rear,
-                temp_node->right); // Enqueue right Child
+                temp_node->right); // Enqueue Right Child
         }
+        else // If this a non-full node, set the flag as
+            // true
+            flag = true;
     }
+
+    // If we reach here, then the tree is complete Binary
+    // Tree
     return true;
 }
 
@@ -232,11 +127,11 @@ int main()
 {
     /* Let us construct the following Binary Tree which
     is not a complete Binary Tree
-        1
-    /        \
-    2         3
-    / \          \
-    4 5	           6
+            1
+        / \
+        2	 3
+        / \	 \
+        4 5	 6
     */
 
     struct node *root = newNode(1);
